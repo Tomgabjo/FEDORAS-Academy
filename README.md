@@ -1,6 +1,6 @@
 # FEDORAS teaching materials — Reading layout
 
-This repository builds a static website from the [approved public Nextcloud share](https://labs.fedoras-academy.eu/index.php/s/yqWgxFNtA2QEFr6). **Edit the Word originals in Nextcloud, not the generated pages.** GitHub holds the build code and handoff instructions. Netlify hosts the built site; a commit in GitHub does not, by itself, publish a change.
+This repository builds a static website from the [approved public Nextcloud share](https://labs.fedoras-academy.eu/index.php/s/yqWgxFNtA2QEFr6). **Edit the Word originals in Nextcloud, not the generated pages.** GitHub holds the build code and handoff instructions. Netlify hosts a built preview of the site; a commit in GitHub does not, by itself, publish a change.
 
 ## For researchers: update an activity
 
