@@ -1,52 +1,110 @@
-# FEDORAS teaching materials — Reading layout
+# FEDORAS teaching materials
 
-This repository builds a static website from the [approved public Nextcloud share](https://labs.fedoras-academy.eu/index.php/s/yqWgxFNtA2QEFr6). **Edit the Word originals in Nextcloud, not the generated pages.** GitHub holds the build code and handoff instructions. Netlify hosts a built preview of the site; a commit in GitHub does not, by itself, publish a change.
+The FEDORAS teaching materials website gives teachers access to activities and supporting resources for science and sustainability education. It is generated from the [WP2 materials on Nextcloud](https://labs.fedoras-academy.eu/index.php/s/yqWgxFNtA2QEFr6).
 
-## For researchers: update an activity
+The Word documents on Nextcloud are the source materials. This repository contains the code, design and checks used to generate the website. A preview of the first version exists on Netlify.
 
-1. Update the approved `.docx` in Nextcloud. Keep the standard activity template, update the visible cover date, and keep the filename stable so existing URLs still work.
-2. Use Word's real headings, numbering, hyperlinks, figure captions and alternative text where possible. Avoid adding instructions for other editors inside the approved documents. Leave optional fields blank rather than leaving unmarked option lists. If a new URL or a supporting file is needed, add it to the approved share and link it from the activity.
-3. Tell the person maintaining the site it is ready for a rebuild. Check the preview against the Word original. Each activity’s Word card names the exact file and opens the public WP2 folder. Download the named file from its **Actions** menu in Nextcloud. The publicly shared folder was verified in the browser; a standalone single-file viewer link was not identified. Raw WebDAV links are used for the build only, not as public site download buttons, after repeat reports of browser failure. Word files are not copied into the deploy.
+## Updating an activity
 
-## For the site maintainer
+1. Edit the activity’s Word document in the WP2 Nextcloud folder.
+2. Keep the existing activity template and update the last-edited date on the cover.
+3. Keep the filename unchanged where possible, so existing website addresses remain valid.
+4. Use Word headings, numbered lists, hyperlinks, figure captions and alternative text where appropriate. Leave optional fields blank if they are not relevant.
+5. Rebuild the website and check the updated page against the Word document.
 
-Install Python 3.10+ and use a virtual environment. Activate it before running these commands (on Windows, activate `.venv\Scripts\Activate.ps1` in PowerShell).
+Each activity page displays the original Word document’s filename and links to the WP2 folder. To download the document, find it in Nextcloud and select **Actions (⋯) → Download**.
 
-```sh
+## Building the website
+
+The build requires Python 3.10 or later.
+
+Create and activate a virtual environment, install the dependencies, and run the refresh command:
+
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 python refresh.py
 ```
 
-`refresh.py` takes a fresh, read-only snapshot of the public share, builds and checks it in a temporary directory, and leaves `site-output/` plus a separate `review-report.json`. It does **not** publish. To run again, use new output and report paths, e.g. `python refresh.py --output preview-new --report preview-new-report.json` (add these to your local excludes or keep them outside the repo).
+On Windows, activate the environment in PowerShell with:
 
-Preview the output with `python -m http.server 8000 --directory site-output` and open `http://localhost:8000`. The website has no runtime connection to Nextcloud for rendering or search; visiting an original download opens the source on Nextcloud. The two featured PDFs are copied, unmodified, into the Netlify bundle so the browser can download them directly.
+```powershell
+.venv\Scripts\Activate.ps1
+```
 
-If an existing source file is missing or renamed, the build stops against `approved-file-list.json`. Investigate before updating this list. For a legitimate rename, preserve the older URL through the alias logic in `parse.py`, update the baseline and confirm any featured download path in `build.py`. A failed check does not affect the live site. New activities with unique slugs are picked up automatically after a rebuild; update the reviewed inventory baseline for the next refresh.
+The refresh command reads the public Nextcloud collection and creates:
 
-### Review and deploy
+- `site-output/` — the generated website
+- `review-report.json` — a build report
 
-1. Review the separate report and check the changed activities on a phone-sized screen, including lists, links, worksheets and figures. For new template features or equations, check the rendered page alongside Word. The converter is for linear web reading, not pixel-for-pixel Word reproduction.
-2. To upload manually, open Netlify Drop at <https://app.netlify.com/drop>. Drop the **unzipped folder that directly contains `index.html`** for a new preview, or open the intended site's **Deploys** page and use its manual upload area when you mean to replace that site. Check the preview URL and keep the last working deploy.
-3. Before first public use, confirm the official funding lockup and disclaimer against the signed grant agreement and confirm any remaining content and image rights with the consortium. Do not upload the internal review report, working Word snapshot, or this source repo to Netlify.
+It does not change files in Nextcloud or publish the website.
 
-### Code and copy
+To run another build without replacing existing output, choose new paths:
 
-- `site-copy.json`: short public overview and Slidebook link label quoted from the [Academy’s repository announcement](https://www.fedoras-academy.eu/futures-are-in-the-making-the-fedoras-materials-repository/). The About page uses excerpts from the Academy project and Resources pages identified there. Use exact published wording for changes. The grant identification line is the supplied project wording.
-- `reader.py`, `equations.py`, `parse.py`: extract and convert Word content. Cover art and empty template prompts are skipped; original links, figures, source dates and native equation content are checked. Text can move into source-labelled sections; the Word document remains definitive, especially for typography, numbering, and Word-specific layouts.
-- `facets.py`: explicit map of subject spellings from the Reading pilot. No subject, intent or learning objective is inferred from prose. Unmarked option lists are not tags.
-- `site.css`, `site.js`, `build.py`: display and filter behaviour. Search data loads only when a teacher searches. Static HTML remains readable without JavaScript.
-- `assets/eu-funding.png`: unmodified official horizontal English RGB Monochrome “Funded by the European Union” lockup, from the [Commission download centre](https://ec.europa.eu/regional_policy/information-sources/logo-download-center_en). The 1.2 cm image height accounts for transparent padding, leaving the flag itself approximately 1.03 CSS cm high. The requested grant line and the [EACEA disclaimer](https://www.eacea.ec.europa.eu/grants/visual-identity/visual-identity-programming-period-2021-2027/european-flag-emblem-and-multilingual-disclaimer_en) are separate text at the end of every page.
+```bash
+python refresh.py --output preview-new --report preview-new-report.json
+```
 
-### Reproduce the full check
+To view the generated website locally:
 
-```sh
+```bash
+python -m http.server 8000 --directory site-output
+```
+
+Then open `http://localhost:8000`.
+
+The generated website does not need to contact Nextcloud to display pages or search. The two featured PDFs are included in the generated site; Word documents remain on Nextcloud.
+
+## Changes to source files
+
+The build checks the source collection against `approved-file-list.json`. If a previously listed file is missing or renamed, the build stops for review.
+
+For an intentional rename:
+
+1. Check whether the activity’s existing website address needs to be preserved using the alias logic in `parse.py`.
+2. Update `approved-file-list.json`.
+3. If a featured PDF was renamed, update its path in `build.py`.
+4. Rebuild and check the result.
+
+New activities with unique page addresses are included when the site is rebuilt. Update the reviewed file list after adding them.
+
+## Reviewing the generated site
+
+Compare changed pages with their Word originals. Check headings, lists, links, worksheets, figures and equations, including on a phone-sized screen.
+
+The Word documents remain the authoritative source. The website presents their content for continuous reading and does not reproduce Word formatting exactly.
+
+## Repository contents
+
+| File or folder | Purpose |
+|---|---|
+| `refresh.py` | Retrieves the source materials and builds the site |
+| `snapshot.py` | Reads the public Nextcloud collection |
+| `build.py` | Generates the website |
+| `reader.py`, `parse.py`, `equations.py` | Convert Word content and equations for web reading |
+| `facets.py` | Maps subject names used in the activity filters |
+| `site-copy.json` | Stores website text sourced from the FEDORAS Academy |
+| `site.css`, `site.js` | Define the site’s appearance and interactions |
+| `approved-file-list.json` | Lists the expected source files |
+| `assets/eu-funding.png` | Official EU funding emblem |
+| `tests/` | Contains website checks |
+
+## Running the checks
+
+Install the test dependencies and Chromium:
+
+```bash
 python -m pip install -r requirements-test.txt
 python -m playwright install chromium
+```
+
+Create a snapshot, build the site and run the checks:
+
+```bash
 python snapshot.py snapshot-local
 python build.py snapshot-local test-output test-report.json
 python tests/check_site.py test-output snapshot-local test-report.json
 ```
 
-The checks verify internal paths, activity structure, original download URLs, embedded formulas, source PDF checksums, and browser interaction at phone and desktop widths. Tests tied to specific activities serve as regression checks; review intended changes to those inputs rather than disabling the assertions. The checks do not certify the editorial accuracy of the Word originals or third-party links, or confirm grant compliance on behalf of the consortium.
+The checks cover website paths, activity structure, source links, equations, featured PDFs and browser interactions. They do not replace a content review against the original documents.
